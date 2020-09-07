@@ -1,0 +1,82 @@
+---
+# tasks file for passenger
+- name: Variables
+  include_vars: main.yml
+  tags:
+    - passenger
+
+- name: Make sure passenger prerequisites are installed
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - epel-release
+    - pygpgme
+  become: true
+  tags:
+    - passenger
+
+- name: Import the passenger gpg key
+  rpm_key:
+    key: "{{ passenger_repo_gpg_url }}"
+    state: present
+  become: true
+  tags:
+    - passenger
+
+- name: add passenger repository config
+  template:
+    src: "{{ passenger_yum_repo_template }}"
+    dest: "{{ passenger_yum_repos_path }}"
+  become: true
+  tags:
+    - passenger
+
+# - name: Install the passenger repository
+#   yum:
+#     name: "{{ passenger_package_name }}"
+#     state: installed
+#     update_cache: true
+#   become: true
+#   notify: restart apache
+#   tags:
+#     - passenger
+
+- name: Install the rack gem
+  become_user: root
+  command: bash -lc "gem install rack -v 1.4.7"
+
+- name: Install the passenger gem
+  become_user: root
+  command: bash -lc "gem install passenger -v 4.0.10"
+#
+# - name: run the Passenger Apache module installer
+#   command: passenger-install-apache2-module
+#   notify: restart apache
+#
+# - name: run the Passenger Apache module installer
+#   expect:
+#     command: passenger-install-apache2-module
+#     responses:
+#       'Press Enter to continue, or Ctrl\-C to abort.': ''
+#       'Press ENTER to continue.': ''
+- name: run the Passenger Apache module installer
+  shell: |
+    set timeout 300
+    spawn /usr/local/rvm/gems/ruby-1.9.3-p551/wrappers/passenger-install-apache2-module
+
+    expect "Press Enter to continue, or Ctrl-C to abort."
+    send "\n"
+
+    expect "Press Enter if you want to continue with installation anyway."
+    send "\n"
+
+    expect "Press ENTER to continue."
+    send "\n"
+  args:
+    executable: /usr/bin/expect
+  register: result
+
+
+- debug:
+    var: result

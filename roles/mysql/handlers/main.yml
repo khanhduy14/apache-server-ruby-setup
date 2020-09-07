@@ -1,0 +1,7 @@
+---
+# handlers file for mysql
+- name: Restart rsyslog service
+  become: yes
+  service:
+    name: rsyslog
+    state: restarted

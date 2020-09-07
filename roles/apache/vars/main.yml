@@ -1,0 +1,6 @@
+---
+# vars file for apache
+apache_certificates_dest:
+  ca_cert: "{{ ssl_cert_directory }}/apache_ca.crt"
+  server_key: "{{ ssl_cert_directory }}/apache_server.key"
+  server_cert: "{{ ssl_cert_directory }}/apache_server.crt"

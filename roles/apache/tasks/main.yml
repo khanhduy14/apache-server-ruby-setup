@@ -1,0 +1,60 @@
+---
+# tasks file for apache
+
+- name: Install Apache
+  block:
+    - package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - httpd-2.2.15
+        - mod_ssl
+  when: ansible_distribution_major_version == '6'
+
+- name: Ensure default document root
+  file:
+    path: /var/www/html
+    state: directory
+
+- name: Enable service
+  service:
+    name: httpd
+    enabled: yes
+
+- name: Create apache log directory
+  file:
+    path: "{{ apache_log_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  notify: restart httpd
+
+- name: Apply httpd.conf
+  template:
+    src: httpd.conf.j2
+    dest: "{{ apache_path }}/conf/httpd.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart httpd
+
+- name: Apply passenger.conf
+  template:
+    src: passenger.conf.j2
+    dest: "{{ apache_path }}/conf.d/passenger.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify: restart httpd
+
+# - name: Copy file with owner and permissions
+#   copy:
+#     src: "{{ item }}"
+#     dest: /etc/letsencrypt/live/pittalytest.ga/
+#     owner: root
+#     group: root
+#     mode: '0777'
+#   with_items:
+#     ['cert.pem', 'chain.pem', 'fullchain.pem', 'privkey.pem']
+#   notify: restart httpd

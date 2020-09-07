@@ -1,0 +1,33 @@
+- name: Pittaly
+  hosts: pittaly_staging
+  vars_files:
+    - group_vars/main.yml
+  roles:
+    - common
+    - repo-remi
+    - repo-epel
+    - { role: geerlingguy.git }
+    - {
+        role: geerlingguy.certbot,
+        certbot_install_from_source: true,
+        certbot_create_if_missing: true,
+        certbot_create_method: standalone,
+        certbot_create_standalone_stop_services: []
+      }
+    - {
+        role: rvm.ruby,
+        tags: ruby,
+        become: yes,
+    
+        rvm1_rubies: ['ruby-1.9.3'],
+        rvm1_install_flags: '--auto-dotfiles',     # Remove --user-install from defaults
+        rvm1_install_path: /usr/local/rvm,         # Set to system location
+        rvm1_user: root                            # Need root account to access system location
+      }
+    - apache
+    - passenger
+    - {
+        role: mysql,
+        version: 5.5,
+      }
+    - redis

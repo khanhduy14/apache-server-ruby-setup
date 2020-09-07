@@ -1,0 +1,25 @@
+---
+# tasks file for redis
+- name: Include variables.
+  include_vars: main.yml
+
+- name: Ensure Redis is installed.
+  package:
+    name: "{{ redis_package }}"
+    state: present
+    enablerepo: "{{ redis_enablerepo | default(omit, true) }}"
+
+- name: Ensure Redis is configured.
+  template:
+    src: redis.conf.j2
+    dest: "{{ redis_conf_path }}"
+    mode: 0644
+  notify: restart redis
+- name: Ensure Redis is running and enabled on boot.
+  service: "name={{ redis_daemon }} state=started enabled=yes"
+
+- name: Ensure Redis Sentinel is configured.
+  template:
+    src: redis-sentinel.conf.j2
+    dest: "{{ redis_conf_path }}"
+    mode: 0644

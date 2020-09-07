@@ -1,0 +1,10 @@
+root_password: "123456789"
+certbot_admin_email: kieukhanhduy1@gmail.com
+certbot_auto_renew_user: root
+certbot_auto_renew_minute: "20"
+certbot_auto_renew_hour: "5"
+domains: pittalytest.ga
+
+certbot_certs:
+  - domains:
+    - "{{ domains }}"

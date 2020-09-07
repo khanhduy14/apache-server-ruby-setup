@@ -1,0 +1,60 @@
+---
+# tasks file for mysql
+- name: Install required packages
+  become: yes
+  yum:
+    name: MySQL-python
+    state: present
+
+- name: Add mysql-community.repo
+  become: yes
+  template:
+    src: mysql-community.repo.j2
+    dest: /etc/yum.repos.d/mysql-community.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Add GPG mysql key
+  become: yes
+  copy:
+    src: RPM-GPG-KEY-mysql
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-mysql
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Install mysql
+  become: yes
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - mysql-server
+    - mysql-community-devel*
+
+- name: Start mysqld
+  become: yes
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+
+- name: Update MySQL root password for all root accounts
+  become: yes
+  mysql_user:
+    name: root
+    host_all: yes
+    password: "{{ root_password }}"
+    check_implicit_admin: yes
+    state: present
+
+- name: Create/update .my.cnf for root user
+  become: yes
+  template:
+    src: my.cnf.j2
+    dest: /etc/my.cnf
+    owner: root
+    group: root
+    mode: 0600

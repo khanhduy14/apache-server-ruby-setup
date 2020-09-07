@@ -1,0 +1,4 @@
+---
+# vars file for passenger
+apache: httpd
+passenger_module_name: mod_passenger

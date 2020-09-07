@@ -1,0 +1,53 @@
+# Passenger
+LoadModule passenger_module /usr/local/rvm/gems/ruby-1.9.3-p551/gems/passenger-4.0.10/buildout/apache2/mod_passenger.so
+PassengerRoot /usr/local/rvm/gems/ruby-1.9.3-p551/gems/passenger-4.0.10
+PassengerDefaultRuby /usr/local/rvm/wrappers/ruby-1.9.3-p551/ruby
+
+# Passengerが追加するHTTPヘッダを削除するための設定。
+Header always unset "X-Powered-By"
+Header always unset "X-Rack-Cache"
+Header always unset "X-Content-Digest"
+Header always unset "X-Runtime"
+
+# 必要に応じてPassengerのチューニングのための設定を追加。
+PassengerMaxPoolSize 20
+PassengerMaxInstancesPerApp 4
+PassengerPoolIdleTime 3600
+# PassengerUseGlobalQueue on
+PassengerHighPerformance on
+PassengerStatThrottleRate 10
+RailsSpawnMethod smart
+RailsAppSpawnerIdleTime 86400
+# RailsFrameworkSpawnerIdleTime 0
+PassengerMaxPreloaderIdleTime 0
+
+<VirtualHost *:443>
+  DocumentRoot /var/www/pittalyso_cloud/public
+  RailsEnv staging
+  PassengerEnabled on
+  RemoveHandler .cgi .php
+  <Directory /var/www/pittalyso_cloud/public>
+    AllowOverride all
+    Options -MultiViews
+  </Directory>
+  ServerName {{ domains }}
+  SSLEngine On
+  SSLCertificateFile /etc/letsencrypt/live/{{ domains }}/cert.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/{{ domains }}/privkey.pem
+</VirtualHost>
+
+<VirtualHost *:80>
+  DocumentRoot /var/www/pittalyso_cloud/public
+  RailsEnv staging
+  PassengerEnabled on
+  RemoveHandler .cgi .php
+  <IfModule mod_rewrite.c>
+    RewriteEngine on
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R,L]
+  </IfModule>
+  <Directory /var/www/pittalyso_cloud/public>
+    AllowOverride all
+    Options -MultiViews
+  </Directory>
+</VirtualHost>
