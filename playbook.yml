@@ -12,13 +12,14 @@
         certbot_install_from_source: true,
         certbot_create_if_missing: true,
         certbot_create_method: standalone,
+        certbot_create_command: "{{ certbot_script }} certonly --standalone --preferred-challenges http -d {{ domains }}"
         certbot_create_standalone_stop_services: []
       }
     - {
         role: rvm.ruby,
         tags: ruby,
         become: yes,
-    
+
         rvm1_rubies: ['ruby-1.9.3'],
         rvm1_install_flags: '--auto-dotfiles',     # Remove --user-install from defaults
         rvm1_install_path: /usr/local/rvm,         # Set to system location
